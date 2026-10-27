@@ -8,13 +8,15 @@ export default function ContactoEnviado() {
   if (!state?.nombre) return <Navigate to="/contacto" replace />;
 
   return (
-    <section className="tarjeta centrado" aria-labelledby="titulo-enviado">
-      <p className="icono-exito" aria-hidden="true">✓</p>
-      <h1 id="titulo-enviado">¡Gracias, {state.nombre}!</h1>
-      <p>Recibimos tu mensaje sobre <strong>{state.motivo.toLowerCase()}</strong>. Te responderemos dentro de 2 días hábiles.</p>
-      <div className="acciones-centro">
-        <Link className="btn btn-primario" to="/">Ir al inventario</Link>
-        <Link className="btn btn-secundario" to="/contacto">Enviar otro mensaje</Link>
+    <section aria-labelledby="titulo-enviado" className="tarjeta mx-auto mt-8 max-w-lg space-y-3 text-center">
+      <p aria-hidden="true" className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-marca-50 text-2xl font-bold text-marca-600">✓</p>
+      <h1 id="titulo-enviado" className="text-2xl font-bold">¡Gracias, {state.nombre}!</h1>
+      <p className="text-stone-600">
+        Recibimos tu mensaje sobre <strong>{state.motivo.toLowerCase()}</strong>. Te responderemos dentro de 2 días hábiles.
+      </p>
+      <div className="flex flex-wrap justify-center gap-2 pt-2">
+        <Link className="btn-primario" to="/">Ir al inicio</Link>
+        <Link className="btn-secundario" to="/contacto">Enviar otro mensaje</Link>
       </div>
     </section>
   );
