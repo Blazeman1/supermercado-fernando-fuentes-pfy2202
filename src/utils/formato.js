@@ -7,3 +7,10 @@ export const estadoStock = (p) => {
 
 export const clp = (n) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(n);
+
+// Clases de Tailwind para cada estado de stock (chip de color).
+export const CLASES_ESTADO = {
+  ok: 'bg-marca-50 text-marca-700',
+  critico: 'bg-acento-100 text-acento-700',
+  agotado: 'bg-red-50 text-red-700',
+};

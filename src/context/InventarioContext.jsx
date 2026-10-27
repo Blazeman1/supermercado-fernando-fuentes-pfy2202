@@ -1,50 +1,42 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { PRODUCTOS_INICIALES } from '../data/productos';
+import { createContext, useContext, useEffect, useMemo, useReducer } from 'react';
+import { ACCIONES, CLAVE_STORAGE, cargarEstadoInicial, inventarioReducer } from './inventarioReducer';
 
-// El inventario vive en un contexto para que lo compartan el Home y la
-// ruta dinámica /producto/:sku sin perder el estado al navegar entre rutas.
+// ESTADO GLOBAL DEL INVENTARIO
+// useReducer guarda la lista de artículos y la lógica para modificarla;
+// el Context la pone a disposición de cualquier componente del árbol
+// (panel, tabla, formulario, detalle) sin pasar props nivel por nivel.
 const InventarioContext = createContext(null);
-const CLAVE_STORAGE = 'inventario-mercado-austral';
-
-function cargarInicial() {
-  try {
-    const guardado = localStorage.getItem(CLAVE_STORAGE);
-    if (guardado) return JSON.parse(guardado);
-  } catch {
-    /* almacenamiento no disponible: se usan los datos iniciales */
-  }
-  return PRODUCTOS_INICIALES;
-}
 
 export function InventarioProvider({ children }) {
-  const [productos, setProductos] = useState(cargarInicial);
+  const [articulos, dispatch] = useReducer(inventarioReducer, undefined, cargarEstadoInicial);
 
+  // Efecto secundario: cada vez que cambia el estado, se persiste en el
+  // navegador para que el inventario sobreviva a una recarga.
   useEffect(() => {
     try {
-      localStorage.setItem(CLAVE_STORAGE, JSON.stringify(productos));
+      localStorage.setItem(CLAVE_STORAGE, JSON.stringify(articulos));
     } catch {
       /* se ignora: el inventario sigue funcionando en memoria */
     }
-  }, [productos]);
+  }, [articulos]);
 
-  const valor = useMemo(() => {
-    const ajustarStock = (sku, delta) =>
-      setProductos((prev) =>
-        prev.map((p) => (p.sku === sku ? { ...p, stock: Math.max(0, p.stock + delta) } : p))
-      );
-
-    const agregarProducto = (nuevo) => setProductos((prev) => [...prev, nuevo]);
-
-    const eliminarProducto = (sku) => setProductos((prev) => prev.filter((p) => p.sku !== sku));
-
-    const restablecer = () => setProductos(PRODUCTOS_INICIALES);
-
-    return { productos, ajustarStock, agregarProducto, eliminarProducto, restablecer };
-  }, [productos]);
+  // Funciones "con nombre" que encapsulan cada dispatch: los componentes
+  // llaman agregarArticulo(...) sin conocer la forma interna de la acción.
+  const valor = useMemo(
+    () => ({
+      articulos,
+      agregarArticulo: (articulo) => dispatch({ type: ACCIONES.AGREGAR, payload: articulo }),
+      ajustarStock: (sku, delta) => dispatch({ type: ACCIONES.AJUSTAR_STOCK, payload: { sku, delta } }),
+      eliminarArticulo: (sku) => dispatch({ type: ACCIONES.ELIMINAR, payload: { sku } }),
+      restablecer: () => dispatch({ type: ACCIONES.RESTABLECER }),
+    }),
+    [articulos]
+  );
 
   return <InventarioContext.Provider value={valor}>{children}</InventarioContext.Provider>;
 }
 
+// Hook personalizado para consumir el contexto con una validación útil.
 // eslint-disable-next-line react-refresh/only-export-components
 export function useInventario() {
   const ctx = useContext(InventarioContext);
