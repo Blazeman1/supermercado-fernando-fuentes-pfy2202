@@ -1,0 +1,1 @@
+import{j as a}from"./index-MPU6W7cw.js";import{e,C as r}from"./formato-qdRat5-d.js";function i({articulo:t}){const{clave:o,texto:s}=e(t);return a.jsx("span",{className:`chip ${r[o]}`,children:s})}export{i as E};
