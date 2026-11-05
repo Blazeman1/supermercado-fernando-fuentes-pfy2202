@@ -1,59 +1,55 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { useInventario } from '../context/InventarioContext';
+import { useCarrito, useInventario } from '../context/hooks';
+import { contarPorCategoria } from '../utils/inventario';
 import { clp } from '../utils/formato';
-import EstadoStock from '../components/EstadoStock';
+import EstadoStock from '../components/inventario/EstadoStock';
+import EncabezadoPagina from '../components/ui/EncabezadoPagina';
+import Boton from '../components/ui/Boton';
+import Tarjeta from '../components/ui/Tarjeta';
 
-// Panel de inicio: resume el estado global del inventario.
-// Todo lo que muestra se DERIVA de "articulos" (no se duplica en otro estado).
+// Panel de inicio: resume el estado global. Todo se DERIVA de los datos
+// del contexto; no se guarda ningún total en un estado aparte.
 export default function Home() {
   const { articulos, ajustarStock } = useInventario();
+  const { totalUnidades, total } = useCarrito();
 
-  const resumen = useMemo(() => {
-    const porTipo = articulos.reduce((acc, a) => {
-      acc[a.tipo] = (acc[a.tipo] ?? 0) + 1;
-      return acc;
-    }, {});
-    return {
-      total: articulos.length,
+  const resumen = useMemo(
+    () => ({
       unidades: articulos.reduce((s, a) => s + a.stock, 0),
       valor: articulos.reduce((s, a) => s + a.stock * a.precio, 0),
-      marcas: new Set(articulos.map((a) => a.marca)).size,
       criticos: articulos.filter((a) => a.stock < a.stockMinimo).sort((x, y) => x.stock / x.stockMinimo - y.stock / y.stockMinimo),
-      porTipo: Object.entries(porTipo).sort((x, y) => y[1] - x[1]),
-    };
-  }, [articulos]);
-
-  const maxTipo = resumen.porTipo[0]?.[1] ?? 1;
+      porCategoria: Object.entries(contarPorCategoria(articulos)).sort((x, y) => y[1] - x[1]),
+    }),
+    [articulos]
+  );
+  const maxCategoria = resumen.porCategoria[0]?.[1] ?? 1;
 
   const indicadores = [
-    { etiqueta: 'Artículos', valor: resumen.total },
-    { etiqueta: 'Marcas', valor: resumen.marcas },
-    { etiqueta: 'Unidades en stock', valor: resumen.unidades.toLocaleString('es-CL') },
+    { etiqueta: 'Artículos', valor: articulos.length },
+    { etiqueta: 'Unidades disponibles', valor: resumen.unidades.toLocaleString('es-CL') },
     { etiqueta: 'Valor del inventario', valor: clp(resumen.valor) },
+    { etiqueta: 'En carrito', valor: `${totalUnidades} un. · ${clp(total)}`, to: '/carrito' },
   ];
 
   return (
     <section aria-labelledby="titulo-panel" className="space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 id="titulo-panel" className="text-2xl font-bold sm:text-3xl">Panel de inventario</h1>
-          <p className="text-stone-600">Resumen de la cadena y artículos que necesitan reposición.</p>
-        </div>
-        <Link to="/articulos/nuevo" className="btn-primario">+ Ingresar artículo</Link>
-      </div>
+      <EncabezadoPagina id="titulo-panel" titulo="Panel de inventario" descripcion="Resumen de la cadena y artículos que necesitan reposición.">
+        <Boton variante="secundario" to="/articulos">Ver artículos</Boton>
+        <Boton to="/articulos/nuevo">+ Ingresar artículo</Boton>
+      </EncabezadoPagina>
 
       <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        {indicadores.map(({ etiqueta, valor }) => (
-          <li key={etiqueta} className="tarjeta p-4">
-            <p className="text-sm text-stone-500">{etiqueta}</p>
-            <p className="text-xl font-bold tabular-nums sm:text-2xl">{valor}</p>
-          </li>
+        {indicadores.map(({ etiqueta, valor, to }) => (
+          <Tarjeta as="li" key={etiqueta} className="p-4">
+            <p className="text-sm text-stone-500">{to ? <Link to={to} className="hover:text-marca-700 hover:underline">{etiqueta}</Link> : etiqueta}</p>
+            <p className="text-lg font-bold tabular-nums sm:text-2xl">{valor}</p>
+          </Tarjeta>
         ))}
       </ul>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <section aria-labelledby="titulo-criticos" className="tarjeta lg:col-span-2">
+        <Tarjeta as="section" aria-labelledby="titulo-criticos" className="lg:col-span-2">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 id="titulo-criticos" className="text-lg font-bold">
               Bajo stock mínimo
@@ -79,34 +75,32 @@ export default function Home() {
                       <span className="text-stone-500"> / {a.stockMinimo} mín.</span>
                     </div>
                     <EstadoStock articulo={a} />
-                    <button type="button" className="btn-secundario px-3 py-1.5" onClick={() => ajustarStock(a.sku, faltante)}>
-                      Reponer +{faltante}
-                    </button>
+                    <Boton variante="secundario" tamano="sm" onClick={() => ajustarStock(a.sku, faltante)}>Reponer +{faltante}</Boton>
                   </li>
                 );
               })}
             </ul>
           )}
-        </section>
+        </Tarjeta>
 
-        <section aria-labelledby="titulo-tipos" className="tarjeta">
-          <h2 id="titulo-tipos" className="mb-4 text-lg font-bold">Artículos por tipo</h2>
+        <Tarjeta as="section" aria-labelledby="titulo-categorias">
+          <h2 id="titulo-categorias" className="mb-4 text-lg font-bold">Artículos por categoría</h2>
           <ul className="space-y-3">
-            {resumen.porTipo.map(([tipo, cantidad]) => (
-              <li key={tipo}>
-                <Link to={`/articulos?tipo=${encodeURIComponent(tipo)}`} className="group block">
+            {resumen.porCategoria.map(([categoria, cantidad]) => (
+              <li key={categoria}>
+                <Link to={`/articulos?categoria=${encodeURIComponent(categoria)}`} className="group block">
                   <div className="mb-1 flex justify-between text-sm">
-                    <span className="font-medium group-hover:text-marca-600 group-hover:underline">{tipo}</span>
+                    <span className="font-medium group-hover:text-marca-600 group-hover:underline">{categoria}</span>
                     <span className="tabular-nums text-stone-500">{cantidad}</span>
                   </div>
                   <div className="h-2 rounded-full bg-stone-100">
-                    <div className="h-2 rounded-full bg-marca-500" style={{ width: `${(cantidad / maxTipo) * 100}%` }} />
+                    <div className="h-2 rounded-full bg-marca-500" style={{ width: `${(cantidad / maxCategoria) * 100}%` }} />
                   </div>
                 </Link>
               </li>
             ))}
           </ul>
-        </section>
+        </Tarjeta>
       </div>
     </section>
   );

@@ -1,8 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { TIPOS } from '../data/productos';
-import { useInventario } from '../context/InventarioContext';
+import { useInventario } from '../context/hooks';
 import { clp } from '../utils/formato';
+import EncabezadoPagina from '../components/ui/EncabezadoPagina';
+import Boton from '../components/ui/Boton';
+import Tarjeta from '../components/ui/Tarjeta';
 
 const VACIO = { nombre: '', marca: '', tipo: '', precio: '', stock: '', stockMinimo: '' };
 
@@ -17,7 +20,7 @@ function validar(datos, articulos) {
   else if (articulos.some((a) => a.nombre.toLowerCase() === nombre.toLowerCase() && a.marca.toLowerCase() === datos.marca.trim().toLowerCase()))
     err.nombre = 'Ya existe un artículo con ese nombre y esa marca.';
   if (datos.marca.trim().length < 2) err.marca = 'Ingresa la marca del artículo.';
-  if (!datos.tipo) err.tipo = 'Selecciona el tipo de producto.';
+  if (!datos.tipo) err.tipo = 'Selecciona la categoría del artículo.';
   if (!(Number(datos.precio) > 0)) err.precio = 'El precio debe ser mayor a 0.';
   if (datos.stock === '' || !Number.isInteger(Number(datos.stock)) || Number(datos.stock) < 0) err.stock = 'Ingresa un número entero, 0 o más.';
   if (datos.stockMinimo === '' || !Number.isInteger(Number(datos.stockMinimo)) || Number(datos.stockMinimo) < 0)
@@ -101,13 +104,10 @@ export default function NuevoArticulo() {
 
   return (
     <section aria-labelledby="titulo-nuevo" className="space-y-5">
-      <div>
-        <h1 id="titulo-nuevo" className="text-2xl font-bold sm:text-3xl">Ingresar artículo</h1>
-        <p className="text-stone-600">Completa los datos para agregar un nuevo artículo al inventario.</p>
-      </div>
+      <EncabezadoPagina id="titulo-nuevo" titulo="Ingresar artículo" descripcion="Completa los datos para agregar un nuevo artículo al inventario." />
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <form onSubmit={enviar} noValidate className="tarjeta space-y-5 lg:col-span-2">
+        <Tarjeta as="form" onSubmit={enviar} noValidate className="space-y-5 lg:col-span-2">
           <fieldset className="space-y-4">
             <legend className="mb-2 text-lg font-bold">Datos del artículo</legend>
             <Campo nombre="nombre" etiqueta="Nombre" error={errores.nombre}>
@@ -120,7 +120,7 @@ export default function NuevoArticulo() {
                   {marcas.map((m) => <option key={m} value={m} />)}
                 </datalist>
               </Campo>
-              <Campo nombre="tipo" etiqueta="Tipo de producto" error={errores.tipo}>
+              <Campo nombre="tipo" etiqueta="Categoría (tipo de producto)" error={errores.tipo}>
                 <select {...props('tipo')}>
                   <option value="">Selecciona…</option>
                   {TIPOS.map((t) => <option key={t}>{t}</option>)}
@@ -145,14 +145,14 @@ export default function NuevoArticulo() {
           </fieldset>
 
           <div className="flex flex-wrap gap-3 border-t border-stone-100 pt-5">
-            <button type="submit" className="btn-primario">Guardar artículo</button>
-            <button type="button" className="btn-secundario" onClick={() => { setDatos(VACIO); setErrores({}); }}>Limpiar</button>
-            <Link to="/articulos" className="btn px-2 text-stone-600 hover:underline">Cancelar</Link>
+            <Boton type="submit">Guardar artículo</Boton>
+            <Boton variante="secundario" onClick={() => { setDatos(VACIO); setErrores({}); }}>Limpiar</Boton>
+            <Boton variante="fantasma" to="/articulos">Cancelar</Boton>
           </div>
-        </form>
+        </Tarjeta>
 
         {/* Vista previa: se actualiza en vivo porque el formulario es controlado */}
-        <aside aria-label="Vista previa del artículo" className="tarjeta h-fit space-y-3 border-dashed bg-stone-50">
+        <Tarjeta as="aside" aria-label="Vista previa del artículo" className="h-fit space-y-3 border-dashed bg-stone-50">
           <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">Vista previa</p>
           <p className="font-mono text-sm text-stone-500">{skuSugerido || 'SKU se asigna según el tipo'}</p>
           <p className="text-lg font-bold">{datos.nombre.trim() || 'Nombre del artículo'}</p>
@@ -162,7 +162,7 @@ export default function NuevoArticulo() {
             <div className="rounded-lg bg-white p-2"><dt className="text-stone-500">Stock</dt><dd className="font-semibold">{datos.stock || '—'}</dd></div>
             <div className="rounded-lg bg-white p-2"><dt className="text-stone-500">Mínimo</dt><dd className="font-semibold">{datos.stockMinimo || '—'}</dd></div>
           </dl>
-        </aside>
+        </Tarjeta>
       </div>
     </section>
   );

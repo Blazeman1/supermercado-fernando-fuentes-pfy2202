@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TIENDAS } from '../data/tiendas';
+import EncabezadoPagina from '../components/ui/EncabezadoPagina';
+import Boton from '../components/ui/Boton';
+import Tarjeta from '../components/ui/Tarjeta';
 
 const MOTIVOS = ['Consulta de stock', 'Sugerencia', 'Reclamo', 'Ser proveedor', 'Otro'];
 const VACIO = { nombre: '', correo: '', motivo: MOTIVOS[0], tienda: '', mensaje: '' };
@@ -31,13 +34,10 @@ export default function Contactanos() {
 
   return (
     <section aria-labelledby="titulo-contacto" className="space-y-5">
-      <div>
-        <h1 id="titulo-contacto" className="text-2xl font-bold sm:text-3xl">Contáctanos</h1>
-        <p className="text-stone-600">¿Buscas un producto, quieres ser proveedor o tienes una sugerencia? Escríbenos.</p>
-      </div>
+      <EncabezadoPagina id="titulo-contacto" titulo="Contáctanos" descripcion="¿Buscas un producto, quieres ser proveedor o tienes una sugerencia? Escríbenos." />
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
-        <form onSubmit={enviar} noValidate className="tarjeta space-y-4 lg:col-span-2">
+        <Tarjeta as="form" onSubmit={enviar} noValidate className="space-y-4 lg:col-span-2">
           <label className="block">
             <span className="etiqueta">Nombre</span>
             <input name="nombre" value={datos.nombre} onChange={cambiar} autoComplete="name" className={clase('nombre')} aria-invalid={!!errores.nombre} aria-describedby={errores.nombre ? 'err-nombre' : undefined} />
@@ -68,17 +68,17 @@ export default function Contactanos() {
             <textarea name="mensaje" rows={5} value={datos.mensaje} onChange={cambiar} className={clase('mensaje')} aria-invalid={!!errores.mensaje} aria-describedby={errores.mensaje ? 'err-mensaje' : undefined} />
             {error('mensaje')}
           </label>
-          <button type="submit" className="btn-primario">Enviar mensaje</button>
-        </form>
+          <Boton type="submit">Enviar mensaje</Boton>
+        </Tarjeta>
 
-        <aside aria-label="Otros canales de atención" className="tarjeta">
+        <Tarjeta as="aside" aria-label="Otros canales de atención">
           <h2 className="text-lg font-bold">Otros canales</h2>
           <dl className="mt-2 space-y-3">
             <div><dt className="text-sm text-stone-500">Mesa central</dt><dd className="font-semibold">600 123 4567</dd></div>
             <div><dt className="text-sm text-stone-500">Correo</dt><dd className="font-semibold">contacto@mercadoaustral.cl</dd></div>
             <div><dt className="text-sm text-stone-500">Horario de atención</dt><dd className="font-semibold">Lunes a viernes, 09:00 a 18:00</dd></div>
           </dl>
-        </aside>
+        </Tarjeta>
       </div>
     </section>
   );

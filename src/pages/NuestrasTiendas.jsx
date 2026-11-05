@@ -1,5 +1,7 @@
 import { useSearchParams } from 'react-router-dom';
 import { REGIONES, TIENDAS } from '../data/tiendas';
+import EncabezadoPagina from '../components/ui/EncabezadoPagina';
+import Tarjeta from '../components/ui/Tarjeta';
 
 export default function NuestrasTiendas() {
   // Filtro por región en la URL: /tiendas?region=Biobío
@@ -14,12 +16,11 @@ export default function NuestrasTiendas() {
 
   return (
     <section aria-labelledby="titulo-tiendas" className="space-y-5">
-      <div>
-        <h1 id="titulo-tiendas" className="text-2xl font-bold sm:text-3xl">Nuestras tiendas</h1>
-        <p className="text-stone-600">
-          {TIENDAS.length} locales en {REGIONES.length} regiones. Revisa dirección, horario y servicios de cada uno.
-        </p>
-      </div>
+      <EncabezadoPagina
+        id="titulo-tiendas"
+        titulo="Nuestras tiendas"
+        descripcion={`${TIENDAS.length} locales en ${REGIONES.length} regiones. Revisa dirección, horario y servicios de cada uno.`}
+      />
 
       <div role="group" aria-label="Filtrar por región" className="flex flex-wrap gap-2">
         <button type="button" className={pildora(!region)} aria-pressed={!region} onClick={() => setParams({})}>Todas</button>
@@ -32,7 +33,7 @@ export default function NuestrasTiendas() {
 
       <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visibles.map((t) => (
-          <li key={t.id} className="tarjeta flex flex-col gap-1">
+          <Tarjeta as="li" key={t.id} className="flex flex-col gap-1">
             <p className="text-xs font-bold uppercase tracking-wider text-acento-700">Región {t.region}</p>
             <h2 className="text-lg font-bold">{t.nombre}</h2>
             <p>{t.direccion}</p>
@@ -43,7 +44,7 @@ export default function NuestrasTiendas() {
                 <li key={s} className="chip bg-marca-50 text-marca-700">{s}</li>
               ))}
             </ul>
-          </li>
+          </Tarjeta>
         ))}
       </ul>
     </section>

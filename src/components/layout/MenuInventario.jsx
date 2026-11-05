@@ -4,15 +4,15 @@ import { NavLink } from 'react-router-dom';
 // Vive en el encabezado, separado del menú inferior de la semana 1.
 // "end" en /articulos evita que quede activo al estar en /articulos/nuevo.
 const ENLACES = [
-  { to: '/articulos', texto: 'Listado de artículos', end: true },
-  { to: '/articulos/nuevo', texto: 'Ingresar artículo' },
+  { to: '/articulos', texto: 'Listado de artículos', corto: 'Listado', end: true },
+  { to: '/articulos/nuevo', texto: 'Ingresar artículo', corto: 'Ingresar' },
 ];
 
 export default function MenuInventario() {
   return (
-    <nav aria-label="Menú de inventario" className="w-full sm:w-auto">
+    <nav aria-label="Menú de inventario" className="flex-1 sm:flex-none">
       <ul className="flex gap-1 rounded-lg bg-marca-700/60 p-1">
-        {ENLACES.map(({ to, texto, end }) => (
+        {ENLACES.map(({ to, texto, corto, end }) => (
           <li key={to} className="flex-1 sm:flex-none">
             <NavLink
               to={to}
@@ -23,7 +23,9 @@ export default function MenuInventario() {
                 }`
               }
             >
-              {texto}
+              {/* Etiqueta corta en pantallas chicas, completa desde sm */}
+              <span className="sm:hidden">{corto}</span>
+              <span className="hidden sm:inline">{texto}</span>
             </NavLink>
           </li>
         ))}

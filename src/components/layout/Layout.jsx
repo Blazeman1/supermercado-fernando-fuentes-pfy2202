@@ -1,17 +1,22 @@
-import { useEffect, useRef } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import MenuInferior from './MenuInferior';
 import MenuInventario from './MenuInventario';
+import BotonCarrito from './BotonCarrito';
+import Cargando from '../ui/Cargando';
 
 const TITULOS = {
   '/': 'Panel de inventario',
   '/articulos': 'Listado de artículos',
   '/articulos/nuevo': 'Ingresar artículo',
+  '/carrito': 'Carrito de compras',
+  '/carrito/compra-exitosa': 'Compra confirmada',
   '/tiendas': 'Nuestras tiendas',
   '/contacto': 'Contáctanos',
   '/contacto/enviado': 'Mensaje enviado',
 };
 
+// Layout común: encabezado con menús, contenido de la ruta actual y menú inferior.
 export default function Layout() {
   const { pathname } = useLocation();
   const mainRef = useRef(null);
@@ -34,20 +39,24 @@ export default function Layout() {
       <header className="bg-marca-600 text-white shadow">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-3">
           <Link to="/" className="inline-flex items-center gap-3" aria-label="Mercado Austral, ir al panel">
-            <span className="grid h-10 w-10 place-items-center rounded-lg bg-acento-400 font-extrabold text-marca-900" aria-hidden="true">
-              MA
-            </span>
+            <span className="grid h-10 w-10 place-items-center rounded-lg bg-acento-400 font-extrabold text-marca-900" aria-hidden="true">MA</span>
             <span className="leading-tight">
               <strong className="block text-lg">Mercado Austral</strong>
               <small className="text-marca-100">Gestión de inventario</small>
             </span>
           </Link>
-          <MenuInventario />
+          <div className="flex w-full items-center gap-2 sm:w-auto">
+            <MenuInventario />
+            <BotonCarrito />
+          </div>
         </div>
       </header>
 
       <main id="contenido" ref={mainRef} tabIndex={-1} className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 focus:outline-none">
-        <Outlet />
+        {/* Suspense muestra <Cargando /> mientras se descarga una página lazy */}
+        <Suspense fallback={<Cargando />}>
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="px-4 py-4 text-center text-sm text-stone-500">

@@ -1,4 +1,4 @@
-import { CLASES_ESTADO, estadoStock } from '../utils/formato';
+import { CLASES_ESTADO, estadoStock } from '../../utils/formato';
 
 // Chip reutilizable que muestra el estado de stock de un artículo.
 export default function EstadoStock({ articulo }) {
